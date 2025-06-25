@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Home - SVEC Bus Tracker{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-gradient text-white py-5 mb-5 rounded">
+    <div class="container text-center">
+        <h1 class="display-4 mb-3">
+            <i class="fas fa-bus"></i>
+            Sri Vasavi Engineering College
+        </h1>
+        <p class="lead mb-4">Real-time Bus Tracking System</p>
+        <p class="mb-4">Track buses across West Godavari, East Godavari & Eluru Districts</p>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <a href="{{ url_for('track') }}" class="btn btn-light btn-lg w-100">
+                    <i class="fas fa-search"></i> Track Your Bus
+                </a>
+            </div>
+            <div class="col-md-6 mb-3">
+                <a href="{{ url_for('routes') }}" class="btn btn-outline-light btn-lg w-100">
+                    <i class="fas fa-route"></i> View All Routes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-search"></i> Quick Bus Search</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" id="searchInput" class="form-control form-control-lg" 
+                                   placeholder="Enter bus number (1-83), route or location...">
+                        </div>
+                        <div class="col-md-4">
+                            <button onclick="searchBus()" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                    <div id="searchResults" class="mt-3"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-info-circle"></i> How It Works</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-user-friends"></i> For Students</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Search your bus by serial number (1-83)</li>
+                                <li><i class="fas fa-check text-success"></i> View real-time location</li>
+                                <li><i class="fas fa-check text-success"></i> No registration required</li>
+                                <li><i class="fas fa-check text-success"></i> Free to use</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-broadcast-tower"></i> For Trackers</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Start tracking when you board</li>
+                                <li><i class="fas fa-check text-success"></i> Share location with other students</li>
+                                <li><i class="fas fa-check text-success"></i> Up to 4 trackers per bus</li>
+                                <li><i class="fas fa-check text-success"></i> Simple one-click start/stop</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-chart-bar"></i> Live Statistics</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <h3 class="text-primary" id="totalBuses">83</h3>
+                            <small>Total Buses</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success" id="availableBuses">0</h3>
+                            <small>Available</small>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <h3 class="text-info" id="activeBuses">0</h3>
+                            <small>Active Now</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-warning" id="maintenanceBuses">0</h3>
+                            <small>Maintenance</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-map"></i> Coverage Areas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <a href="/routes?district=west godavari" class="badge bg-primary text-decoration-none text-white">West Godavari</a>
+                        <small class="text-muted" id="wgCount">Loading...</small>
+                    </div>
+                    <div class="mb-2">
+                        <a href="/routes?district=east godavari" class="badge bg-success text-decoration-none text-white">East Godavari</a>
+                        <small class="text-muted" id="egCount">Loading...</small>
+                    </div>
+                    <div class="mb-2">
+                        <a href="/routes?district=eluru" class="badge bg-info text-decoration-none text-white">Eluru</a>
+                        <small class="text-muted" id="elCount">Loading...</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="fas fa-clock"></i> Peak Hours</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Morning:</strong> 7:00 AM - 9:30 AM</p>
+                    <p><strong>Evening:</strong> 4:00 PM - 7:00 PM</p>
+                    <small class="text-muted">Most buses are active during these times</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function searchBus() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) {
+        alert('Please enter a search term');
+        return;
+    }
+    
+    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.navigate) {
+                // Navigate to routes or track page based on area
+                const area = data.area.toLowerCase();
+                if (area === 'west godavari' || area === 'east godavari' || area === 'eluru') {
+                    window.location.href = `/routes?district=${encodeURIComponent(area)}`;
+                } else {
+                    // If area is a location, navigate to track page
+                    window.location.href = `/track?area=${encodeURIComponent(area)}`;
+                }
+            } else if (data.not_available) {
+                document.getElementById('searchResults').innerHTML = '<div class="alert alert-info">No buses found matching your search. Note: Only available buses are shown (others under maintenance).</div>';
+            } else {
+                displaySearchResults(data);
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            alert('Error searching buses');
+        });
+}
+
+function displaySearchResults(buses) {
+    const resultsDiv = document.getElementById('searchResults');
+    
+    if (buses.length === 0) {
+        resultsDiv.innerHTML = '<div class="alert alert-info">No buses found matching your search. Note: Only available buses are shown (others under maintenance).</div>';
+        return;
+    }
+    
+    let html = '<div class="mt-3"><h6>Search Results:</h6>';
+    buses.forEach(bus => {
+        html += `
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <strong>Bus ${bus.bus_number}</strong>
+                        </div>
+                        <div class="col-md-5">
+                            <small>${bus.route_name}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge ${bus.status === 'tracking' ? 'bg-success' : 'bg-secondary'}">
+                                ${bus.status}
+                            </span>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/track?bus=${bus.bus_number}" class="btn btn-sm btn-primary">Track</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    resultsDiv.innerHTML = html;
+}
+
+// Enter key search
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchBus();
+    }
+});
+
+// Load statistics
+function loadStats() {
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(stats => {
+            document.getElementById('totalBuses').textContent = stats.total_buses;
+            document.getElementById('availableBuses').textContent = stats.available_buses;
+            document.getElementById('activeBuses').textContent = stats.active_buses;
+            document.getElementById('maintenanceBuses').textContent = stats.maintenance_buses;
+        })
+        .catch(error => console.error('Error loading stats:', error));
+    
+    // Load district counts
+    fetch('/api/buses')
+        .then(response => response.json())
+        .then(buses => {
+            const wg = buses.filter(b => b.district === 'West Godavari').length;
+            const eg = buses.filter(b => b.district === 'East Godavari').length;
+            const el = buses.filter(b => b.district === 'Eluru').length;
+            
+            document.getElementById('wgCount').textContent = `${wg} buses`;
+            document.getElementById('egCount').textContent = `${eg} buses`;
+            document.getElementById('elCount').textContent = `${el} buses`;
+        })
+        .catch(error => console.error('Error loading district counts:', error));
+}
+
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    
+    // Auto-refresh stats every 30 seconds
+    setInterval(loadStats, 30000);
+});
+</script>
+{% endblock %}

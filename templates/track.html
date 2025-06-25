@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+{% block title %}Track Bus - SVEC Bus Tracker{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Sidebar search and info -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-search"></i> Find Your Bus</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Bus Number</label>
+                        <input type="text" id="busNumber" class="form-control" placeholder="e.g., AP29Z1001">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Or Select District</label>
+                        <select id="districtSelect" class="form-select">
+                            <option value="">Choose District</option>
+                            <option value="west godavari">West Godavari</option>
+                            <option value="east godavari">East Godavari</option>
+                            <option value="eluru">Eluru</option>
+                        </select>
+                    </div>
+                    <button onclick="searchBus()" class="btn btn-primary w-100 mb-3">
+                        <i class="fas fa-search"></i> Search Bus
+                    </button>
+
+                    <div id="busInfo" class="d-none">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 id="busDetails"></h6>
+                                <p id="routeInfo" class="text-muted"></p>
+                                <div id="busStatus" class="mb-3"></div>
+                                <div class="d-grid gap-2">
+                                    <button id="trackBtn" onclick="startTracking()" class="btn btn-success">
+                                        <i class="fas fa-play"></i> Start Tracking
+                                    </button>
+                                    <button id="stopBtn" onclick="stopTracking()" class="btn btn-danger d-none">
+                                        <i class="fas fa-stop"></i> Stop Tracking
+                                    </button>
+                                    <button id="viewBtn" onclick="viewBus()" class="btn btn-info">
+                                        <i class="fas fa-eye"></i> View on Map
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-info-circle"></i> Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <h6>For Students:</h6>
+                    <ul class="small">
+                        <li>Enter your bus number to track</li>
+                        <li>View real-time location on map</li>
+                        <li>See estimated arrival time</li>
+                    </ul>
+                    <h6>For Bus Travelers:</h6>
+                    <ul class="small">
+                        <li>Click "Start Tracking" when you board</li>
+                        <li>Your location will be shared with other students</li>
+                        <li>Remember to stop tracking when you get off</li>
+                        <li>Maximum 4 trackers per bus</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Map & Route Info -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-map"></i> Live Bus Location</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map" style="height: 500px; width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-route"></i> Route Information</h5>
+                </div>
+                <div class="card-body">
+                    <div id="routeDetails" class="text-muted">
+                        <p>Select a bus to view route information</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map;
+let currentBus = null;
+let trackerId = null;
+let watchId = null;
+let busMarker = null;
+
+function initMap() {
+    // Fit map to show all major towns + SVEC
+    map = L.map('map').setView([16.75, 81.3], 9); // West Godavari center
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const stops = [
+        { name: "SVEC College", lat: 16.7108, lng: 81.0952 },
+        { name: "Tanuku", lat: 16.7548, lng: 81.6817 },
+        { name: "Tadepalligudem", lat: 16.8147, lng: 81.5272 },
+        { name: "Attili", lat: 16.7048, lng: 81.6032 },
+        { name: "Palakollu", lat: 16.5168, lng: 81.7292 },
+        { name: "Nidadavolu", lat: 16.9056, lng: 81.6719 },
+        { name: "Undi", lat: 16.7681, lng: 81.4931 },
+        { name: "Eluru", lat: 16.7102, lng: 81.0950 },
+        { name: "Pentapadu", lat: 16.7877, lng: 81.4822 },
+        { name: "Peravali", lat: 16.8480, lng: 81.7290 }
+    ];
+
+    // Draw all markers
+    stops.forEach(stop => {
+        L.marker([stop.lat, stop.lng], {
+            icon: L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                iconSize: [24, 24],
+                iconAnchor: [12, 24]
+            })
+        }).addTo(map).bindPopup(`<b>${stop.name}</b>`);
+    });
+
+    // Auto-fit map to all markers
+    const group = new L.featureGroup(stops.map(s => L.marker([s.lat, s.lng])));
+    map.fitBounds(group.getBounds().pad(0.2)); // Add padding
+}
+
+function updateMapLocation(lat, lng) {
+    const position = [lat, lng];
+
+    if (!map) {
+        console.warn("Map not ready");
+        return;
+    }
+
+    if (busMarker) {
+        busMarker.setLatLng(position);
+    } else {
+        busMarker = L.marker(position, {
+            icon: L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/69/69524.png',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            })
+        }).addTo(map);
+    }
+
+    map.setView(position, 15);  // ✅ This is what moves the map to the location
+
+    busMarker.bindPopup("🚌 Bus Location").openPopup();
+}
+
+
+
+
+function searchBus() {
+    const busNumber = document.getElementById('busNumber').value.trim();
+    const district = document.getElementById('districtSelect').value;
+
+    if (!busNumber && !district) return alert('Please enter a bus number or select a district');
+
+    const url = busNumber ? `/api/bus/${busNumber}` : `/api/routes/${district}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (busNumber) displayBusInfo(busNumber, data);
+            else displayDistrictBuses(data);
+        })
+        .catch(() => alert('Bus not found or error occurred'));
+}
+
+function displayBusInfo(busNumber, data) {
+    currentBus = busNumber;
+    document.getElementById('busDetails').textContent = `Bus: ${busNumber}`;
+    document.getElementById('routeInfo').textContent = data.route_name;
+
+    const badge = data.status === 'tracking' ?
+        '<span class="badge bg-success">Live Tracking</span>' :
+        '<span class="badge bg-secondary">Stopped</span>';
+
+    document.getElementById('busStatus').innerHTML = `
+        <p>Status: ${badge}</p>
+        <p>Trackers: ${data.tracker_count}/${data.max_trackers}</p>
+        <p>Last Updated: ${new Date(data.last_updated).toLocaleTimeString()}</p>
+    `;
+    document.getElementById('busInfo').classList.remove('d-none');
+
+    if (data.current_lat && data.current_lng) {
+        updateMapLocation(data.current_lat, data.current_lng);
+    }
+}
+
+function displayDistrictBuses(data) {
+    let html = '<h6>Available Buses:</h6>';
+    for (let routeId in data) {
+        const r = data[routeId];
+        html += `<div><strong>${r.route_name}</strong><br><small>Buses: ${r.bus_numbers.join(', ')}</small></div>`;
+    }
+    document.getElementById('routeDetails').innerHTML = html;
+}
+
+function startTracking() {
+    if (!currentBus) return alert('Please select a bus first');
+    fetch('/api/start_tracking', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ bus_number: currentBus })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            trackerId = data.tracker_id;
+            startLocationTracking();
+            document.getElementById('trackBtn').classList.add('d-none');
+            document.getElementById('stopBtn').classList.remove('d-none');
+        } else {
+            alert(data.error || 'Failed to start tracking');
+        }
+    });
+}
+
+function stopTracking() {
+    if (!trackerId) return;
+    fetch('/api/stop_tracking', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ tracker_id: trackerId })
+    }).then(() => {
+        stopLocationTracking();
+        trackerId = null;
+        document.getElementById('trackBtn').classList.remove('d-none');
+        document.getElementById('stopBtn').classList.add('d-none');
+    });
+}
+
+function startLocationTracking() {
+    if (!trackerId) return;
+
+    watchId = navigator.geolocation.watchPosition(
+        pos => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            // Send to backend
+            fetch('/api/update_location', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tracker_id: trackerId,
+                    latitude: lat,
+                    longitude: lng
+                })
+            });
+
+            // ✅ Update map with your live position
+            updateMapLocation(lat, lng);
+        },
+        err => {
+            console.error("Geo error", err);
+            alert("Unable to get location");
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 5000
+        }
+    );
+}
+
+function stopLocationTracking() {
+    if (watchId) navigator.geolocation.clearWatch(watchId);
+}
+
+function viewBus() {
+    if (!currentBus) {
+        alert("Please select a bus first");
+        return;
+    }
+
+    fetch(`/api/bus/${currentBus}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.current_lat && data.current_lng) {
+                // ✅ Move the map to the bus position
+                updateMapLocation(data.current_lat, data.current_lng);
+            } else {
+                alert('No live location available for this bus');
+            }
+        })
+        .catch(error => {
+            console.error('ViewBus error:', error);
+            alert('Error fetching bus location');
+        });
+}
+
+
+
+setInterval(() => {
+    if (currentBus && !trackerId) {
+        fetch(`/api/bus/${currentBus}`)
+            .then(res => res.json())
+            .then(data => displayBusInfo(currentBus, data));
+    }
+}, 5000);
+
+window.addEventListener('beforeunload', () => {
+    if (trackerId) {
+        navigator.sendBeacon('/api/stop_tracking', JSON.stringify({ tracker_id: trackerId }));
+    }
+});
+
+window.onload = function () {
+    initMap();
+    const busParam = new URLSearchParams(window.location.search).get('bus');
+    if (busParam) {
+        document.getElementById('busNumber').value = busParam;
+        searchBus();
+    }
+};
+// 🔄 Auto-refresh live bus location every 5 seconds
+setInterval(() => {
+    if (currentBus && !trackerId) {
+        fetch(`/api/bus/${currentBus}`)
+            .then(res => res.json())
+            .then(data => {
+                displayBusInfo(currentBus, data);
+                if (data.current_lat && data.current_lng) {
+                    updateMapLocation(data.current_lat, data.current_lng);
+                }
+            })
+            .catch(err => console.error("Auto-refresh failed:", err));
+    }
+}, 5000);
+
+</script>
+{% endblock %}
