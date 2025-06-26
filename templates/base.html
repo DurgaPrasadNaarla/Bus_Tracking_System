@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SVEC Bus Tracker{% endblock %}</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg ">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('home') }}">
+        <i class="fas fa-bus"></i> SVEC Bus Tracker
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('track') }}"><i class="fas fa-map-marker-alt"></i> Track Bus</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('routes') }}"><i class="fas fa-route"></i> Routes</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="container-fluid py-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-dark text-light py-3 mt-5">
+    <div class="container text-center">
+      <p>&copy; 2025 Sri Vasavi Engineering College - Bus Tracking System</p>
+      <p><small>Serving West Godavari, East Godavari & Eluru Districts</small></p>
+      <div class="text-white mt-2">Contact Number: 08818-444627 Pedatadepalli TPG-2</div>
+    </div>
+  </footer>
+
+  <!-- CHAT BUTTON & BOX -->
+  <style>
+    #chatToggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #0d6efd;
+      color: white;
+      font-size: 22px;
+      border: none;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #chatBox {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 340px;
+      transform: translateX(0%);
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      display: none;
+      flex-direction: column;
+      max-height: 520px;
+      z-index: 9998;
+      overflow: hidden;
+    }
+
+    #chatMessages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      font-size: 14px;
+    }
+
+    #chatInputArea {
+      display: flex;
+      border-top: 1px solid #ccc;
+      background-color: white;
+    }
+
+    #chatInput {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #sendBtn, #micBtn {
+      background: #0d6efd;
+      color: white;
+      border: none;
+      padding: 10px 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .chat-msg { margin-bottom: 8px; }
+    .chat-msg strong { display: block; }
+
+    #chatFAQ {
+      padding: 8px 10px;
+      border-top: 1px solid #ddd;
+      background-color: #f9f9f9;
+    }
+
+    #chatFAQ .faq-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pulsing {
+      animation: pulseWave 1s infinite ease-in-out;
+      background-color: #dc3545 !important;
+      color: white !important;
+    }
+
+    @keyframes pulseWave {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+
+  <!-- Chat Toggle Button -->
+  <button id="chatToggle">💬</button>
+
+  <!-- Chat Box -->
+  <div id="chatBox">
+    <div id="chatMessages"></div>
+
+    <!-- FAQs -->
+    <div id="chatFAQ">
+      <div style="font-weight: 600; font-size: 13px; margin-bottom: 5px;">FAQs:</div>
+      <div class="faq-buttons">
+        <button style="background:#6f42c1; color:white; font-size:12px; padding:5px 10px; border:none; border-radius:5px;" onclick="quickAsk('How do I track a bus?')">📍 Track</button>
+        <button style="background:#20c997; color:white; font-size:12px; padding:5px 10px; border:none; border-radius:5px;" onclick="quickAsk('What routes are available?')">🛣 Routes</button>
+        <button style="background:#fd7e14; color:white; font-size:12px; padding:5px 10px; border:none; border-radius:5px;" onclick="quickAsk('How many buses are active?')">🚌 Active</button>
+        <button style="background:#d63384; color:white; font-size:12px; padding:5px 10px; border:none; border-radius:5px;" onclick="quickAsk('Which districts are served?')">📍 Districts</button>
+        <button style="background:#6c757d; color:white; font-size:12px; padding:5px 10px; border:none; border-radius:5px;" onclick="quickAsk('Who to contact?')">☎️ Contact</button>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div id="chatInputArea">
+      <input type="text" id="chatInput" placeholder="Ask me anything..." />
+      <button id="micBtn"><i class="fas fa-microphone-lines"></i></button>
+      <button id="sendBtn">➤</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+
+  <!-- Chat Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const chatToggle = document.getElementById("chatToggle");
+      const chatBox = document.getElementById("chatBox");
+      const sendBtn = document.getElementById("sendBtn");
+      const chatInput = document.getElementById("chatInput");
+      const chatMessages = document.getElementById("chatMessages");
+      const micBtn = document.getElementById("micBtn");
+
+      chatToggle.addEventListener("click", () => {
+        const isVisible = chatBox.style.display === "flex";
+        chatBox.style.display = isVisible ? "none" : "flex";
+        if (!isVisible) chatInput.focus();
+      });
+
+      sendBtn.addEventListener("click", sendMessage);
+      chatInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+      });
+
+      micBtn.addEventListener("click", () => {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-IN';
+        micBtn.classList.add("pulsing");
+        recognition.start();
+
+        recognition.onresult = event => {
+          micBtn.classList.remove("pulsing");
+          chatInput.value = event.results[0][0].transcript;
+          sendMessage();
+        };
+
+        recognition.onerror = () => {
+          micBtn.classList.remove("pulsing");
+          alert("🎤 Mic error occurred");
+        };
+
+        recognition.onend = () => {
+          micBtn.classList.remove("pulsing");
+        };
+      });
+
+      window.quickAsk = function(question) {
+        chatInput.value = question;
+        sendMessage();
+      };
+
+      function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        appendMessage("You", message);
+        chatInput.value = "";
+
+        const loadingMsg = document.createElement("div");
+        loadingMsg.className = "chat-msg";
+        loadingMsg.innerHTML = `<em>Bot is typing...</em>`;
+        chatMessages.appendChild(loadingMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        })
+          .then(res => res.json())
+          .then(data => {
+            loadingMsg.remove();
+            appendMessage("Bot", data.reply);
+          })
+          .catch(() => {
+            loadingMsg.remove();
+            appendMessage("Bot", "❌ Error connecting to server.");
+          });
+      }
+
+      function appendMessage(sender, text) {
+        const msg = document.createElement("div");
+        msg.className = "chat-msg";
+        msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    });
+  </script>
+</body>
+</html>

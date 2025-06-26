@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Routes - SVEC Bus Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-route"></i> Bus Routes to SVEC</h2>
+            <p class="text-muted">Currently Available Buses (Others under maintenance)</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Note:</strong> We have 83 buses in total (Serial No. 1-83), but currently only the buses listed below are available for tracking. Other buses are under maintenance.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <button onclick="filterRoutes('all')" class="btn btn-primary w-100" id="allBtn">
+                        <i class="fas fa-list"></i> All Available
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <button onclick="filterRoutes('west godavari')" class="btn btn-outline-primary w-100" id="wgBtn">
+                        <i class="fas fa-map-marker-alt"></i> West Godavari
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <button onclick="filterRoutes('east godavari')" class="btn btn-outline-primary w-100" id="egBtn">
+                        <i class="fas fa-map-marker-alt"></i> East Godavari
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <button onclick="filterRoutes('eluru')" class="btn btn-outline-primary w-100" id="elBtn">
+                        <i class="fas fa-map-marker-alt"></i> Eluru
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div id="routesContainer">
+                <!-- Routes will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allRoutesData = {};
+
+function loadAllRoutes() {
+    fetch('/api/routes')
+        .then(response => response.json())
+        .then(data => {
+            allRoutesData = data;
+            displayRoutes(data);
+        })
+        .catch(error => {
+            console.error('Error loading routes:', error);
+            document.getElementById('routesContainer').innerHTML = 
+                '<div class="alert alert-danger">Error loading routes</div>';
+        });
+}
+
+function filterRoutes(district) {
+    // Update button states
+    document.querySelectorAll('button[id$="Btn"]').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+    
+    if (district === 'all') {
+        document.getElementById('allBtn').classList.remove('btn-outline-primary');
+        document.getElementById('allBtn').classList.add('btn-primary');
+        displayRoutes(allRoutesData);
+    } else {
+        const btnId = district === 'west godavari' ? 'wgBtn' : 
+                     district === 'east godavari' ? 'egBtn' : 'elBtn';
+        document.getElementById(btnId).classList.remove('btn-outline-primary');
+        document.getElementById(btnId).classList.add('btn-primary');
+        
+        fetch(`/api/routes/${district}`)
+            .then(response => response.json())
+            .then(data => displayRoutes(data))
+            .catch(error => console.error('Error:', error));
+    }
+}
+
+function displayRoutes(routesData) {
+    const container = document.getElementById('routesContainer');
+    
+    if (Object.keys(routesData).length === 0) {
+        container.innerHTML = '<div class="alert alert-info">No routes found for this filter</div>';
+        return;
+    }
+    
+    // Group routes by location
+    const groupedRoutes = {};
+    Object.keys(routesData).forEach(routeId => {
+        const route = routesData[routeId];
+        const location = route.start_location;
+        if (!groupedRoutes[location]) {
+            groupedRoutes[location] = {
+                location: location,
+                district: route.district,
+                buses: []
+            };
+        }
+        groupedRoutes[location].buses.push({
+            bus_number: routeId,
+            route_name: route.route_name
+        });
+    });
+    
+    let html = '';
+    
+    Object.keys(groupedRoutes).forEach(location => {
+        const group = groupedRoutes[location];
+        html += `
+            <div class="card mb-4 route-card" data-district="${group.district.toLowerCase()}">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-pin"></i> ${group.location} to SVEC
+                        <span class="badge bg-light text-dark ms-2">${group.district}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle"></i> Route Information</h6>
+                            <p><strong>From:</strong> ${group.location}</p>
+                            <p><strong>To:</strong> Sri Vasavi Engineering College</p>
+                            <p><strong>District:</strong> ${group.district}</p>
+                            <p><strong>Available Buses:</strong> ${group.buses.length}</p>
+                        </div>
+                        
+<div class="col-md-6">
+    <h6><i class="fas fa-bus"></i> Available Buses</h6>
+    <div class="row">
+        ${group.buses.map(bus => `
+            <div class="col-md-6 mb-2">
+                <div class="bus-card d-flex justify-content-between align-items-center">
+                    <span class="bus-number">Bus ${bus.bus_number}</span>
+<a href="/track?bus=${bus.bus_number}" class="btn btn-sm btn-success d-flex align-items-center justify-content-center">
+    <span><i class="fas fa-search"></i>&nbsp;Track</span>
+</a>
+                </div>
+            </div>
+        `).join('')}
+    </div>
+    
+    <div class="mt-3">
+        <small class="text-muted">
+            <i class="fas fa-info-circle"></i> 
+            Click "Track" to see real-time location of any bus
+        </small>
+    </div>
+</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
+
+// Load routes on page load with optional district filter
+document.addEventListener('DOMContentLoaded', function() {
+    const district = getQueryParam('district');
+    if (district && ['west godavari', 'east godavari', 'eluru'].includes(district.toLowerCase())) {
+        filterRoutes(district.toLowerCase());
+    } else {
+        loadAllRoutes();
+    }
+});
+</script>
+
+<style>
+.route-card {
+    transition: transform 0.2s;
+    border-left: 4px solid #007bff;
+}
+
+.route-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.bus-card {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.bus-card:hover {
+    background-color: #e9ecef;
+}
+
+.bus-number {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.card-header {
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+}
+</style>
+{% endblock %}
