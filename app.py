@@ -1,11 +1,8 @@
 from flask import Flask, render_template, request, jsonify
-<<<<<<< HEAD
 from config import AVAILABLE_BUSES, DISTRICT_MAP, AVAILABLE_COUNT, TOTAL_BUSES
 from flask_cors import CORS
 import re
-=======
 from flask_cors import CORS
->>>>>>> 0973bb858c292fc9da70b680e55d3111bb568348
 import json
 import os
 from datetime import datetime, timedelta
@@ -83,7 +80,6 @@ def buses_live():
         for i in range(1, 20)
     ])
 
-<<<<<<< HEAD
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -150,8 +146,6 @@ def chat():
     # ❌ Fallback
     return jsonify({"reply": "Sorry, I didn’t understand that. Try asking about routes, tracking, contact, or buses."})
 
-=======
->>>>>>> 0973bb858c292fc9da70b680e55d3111bb568348
 @app.route('/track')
 def track():
     return render_template('track.html')
