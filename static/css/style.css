@@ -132,16 +132,13 @@ body::after {
 
 @keyframes backgroundShift {
   0% {
-    transform: scale(1) rotate(0deg);
-    filter: hue-rotate(0deg);
+    transform: scale(1);
   }
   50% {
-    transform: scale(1.1) rotate(2deg);
-    filter: hue-rotate(30deg);
+    transform: scale(1.1);
   }
   100% {
-    transform: scale(1.05) rotate(-1deg);
-    filter: hue-rotate(60deg);
+    transform: scale(1.05);
   }
 }
 
@@ -151,8 +148,8 @@ body::after {
 }
 
 @keyframes floatingParticles {
-  0% { transform: translateY(0px) rotate(0deg); }
-  100% { transform: translateY(-100vh) rotate(360deg); }
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-100vh); }
 }
 
 @keyframes particleGlow {
@@ -258,7 +255,7 @@ body::after {
 }
 
 .navbar-brand:hover {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.1);
   filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.8));
   animation: brandPulse 0.5s ease-in-out;
 }
@@ -269,8 +266,8 @@ body::after {
 }
 
 @keyframes brandPulse {
-  0%, 100% { transform: scale(1.1) rotate(5deg); }
-  50% { transform: scale(1.15) rotate(7deg); }
+  0%, 100% { transform: scale(1.1); }
+  50% { transform: scale(1.15); }
 }
 
 .navbar-nav .nav-link {
@@ -316,7 +313,7 @@ body::after {
 
 .navbar-nav .nav-link:hover {
   color: white !important;
-  transform: translateY(-5px) scale(1.1) rotate(2deg);
+  transform: translateY(-5px) scale(1.1);
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
   box-shadow: var(--shadow-mega-glow);
 }
@@ -367,28 +364,20 @@ body::after {
   background: 
     conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(139, 92, 246, 0.1) 60deg, transparent 120deg),
     conic-gradient(from 180deg at 70% 30%, transparent 0deg, rgba(244, 114, 182, 0.1) 90deg, transparent 180deg);
-  animation: heroRotate 30s linear infinite;
 }
 
 @keyframes heroAnimation {
   0% { 
-    transform: scale(1) rotate(0deg);
-    filter: hue-rotate(0deg) brightness(1);
+    transform: scale(1);
   }
   50% {
-    transform: scale(1.02) rotate(1deg);
-    filter: hue-rotate(15deg) brightness(1.1);
+    transform: scale(1.02);
   }
   100% { 
-    transform: scale(1.05) rotate(-1deg);
-    filter: hue-rotate(30deg) brightness(1.05);
+    transform: scale(1.05);
   }
 }
 
-@keyframes heroRotate {
-  0% { transform: rotate(0deg) scale(1); }
-  100% { transform: rotate(360deg) scale(1.1); }
-}
 
 .hero-section .container {
   position: relative;
@@ -488,7 +477,7 @@ body::after {
 }
 
 .card:hover {
-  transform: translateY(-15px) scale(1.05) rotate(2deg);
+  transform: translateY(-15px) scale(1.05);
   box-shadow: var(--shadow-cosmic), var(--shadow-explosion);
   border: 2px solid rgba(139, 92, 246, 0.3);
 }
@@ -510,8 +499,8 @@ body::after {
 }
 
 @keyframes cardRadialPulse {
-  0% { transform: scale(1) rotate(0deg); }
-  100% { transform: scale(1.1) rotate(10deg); }
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
 }
 
 .card-header {
@@ -537,8 +526,8 @@ body::after {
 }
 
 @keyframes headerSpiral {
-  0% { transform: rotate(0deg) scale(0.5); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% { transform: scale(0.5); }
+  100% { transform: scale(1); }
 }
 
 .card-body {
@@ -652,16 +641,16 @@ body::after {
 }
 
 .btn-primary:hover {
-  transform: translateY(-5px) scale(1.08) rotate(1deg);
+  transform: translateY(-5px) scale(1.08);
   box-shadow: var(--shadow-portal);
   color: white;
   animation: buttonMagic 0.6s ease-out;
 }
 
 @keyframes buttonMagic {
-  0% { filter: hue-rotate(0deg) brightness(1); }
-  50% { filter: hue-rotate(30deg) brightness(1.2); }
-  100% { filter: hue-rotate(0deg) brightness(1.1); }
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.2); }
+  100% { filter: brightness(1.1); }
 }
 
 .btn-success {
@@ -671,7 +660,7 @@ body::after {
 }
 
 .btn-success:hover {
-  transform: translateY(-5px) scale(1.08) rotate(-1deg);
+  transform: translateY(-5px) scale(1.08);
   box-shadow: var(--shadow-xl), 0 0 40px rgba(16, 185, 129, 0.6);
   color: white;
   animation: successPulse 0.6s ease-out;
@@ -689,17 +678,17 @@ body::after {
 }
 
 .btn-danger:hover {
-  transform: translateY(-5px) scale(1.08) rotate(1deg);
+  transform: translateY(-5px) scale(1.08);
   box-shadow: var(--shadow-xl), 0 0 40px rgba(239, 68, 68, 0.6);
   color: white;
   animation: dangerShake 0.6s ease-out;
 }
 
 @keyframes dangerShake {
-  0%, 100% { transform: translateY(-5px) scale(1.08) rotate(1deg); }
-  25% { transform: translateY(-5px) scale(1.08) rotate(-2deg); }
-  50% { transform: translateY(-5px) scale(1.08) rotate(3deg); }
-  75% { transform: translateY(-5px) scale(1.08) rotate(-1deg); }
+  0%, 100% { transform: translateY(-5px) scale(1.08); }
+  25% { transform: translateY(-5px) scale(1.08); }
+  50% { transform: translateY(-5px) scale(1.08); }
+  75% { transform: translateY(-5px) scale(1.08); }
 }
 
 .btn-info {
@@ -709,7 +698,7 @@ body::after {
 }
 
 .btn-info:hover {
-  transform: translateY(-5px) scale(1.08) rotate(-1deg);
+  transform: translateY(-5px) scale(1.08);
   box-shadow: var(--shadow-xl), 0 0 40px rgba(6, 182, 212, 0.6);
   color: white;
   animation: infoGlow 0.6s ease-out;
@@ -795,7 +784,7 @@ body::after {
 }
 
 .badge:hover {
-  transform: scale(1.1) rotate(3deg);
+  transform: scale(1.1);
   box-shadow: var(--shadow-md), 0 0 15px rgba(139, 92, 246, 0.3);
 }
 
@@ -931,7 +920,7 @@ body::after {
 }
 
 .stop-item:hover .stop-number {
-  transform: scale(1.2) rotate(10deg);
+  transform: scale(1.2);
   box-shadow: var(--shadow-md), 0 0 15px rgba(139, 92, 246, 0.5);
 }
 
@@ -1033,7 +1022,7 @@ body::after {
 }
 
 .stats-card:hover {
-  transform: translateY(-10px) scale(1.03) rotate(1deg);
+  transform: translateY(-10px) scale(1.03);
   box-shadow: var(--shadow-portal);
 }
 
@@ -1130,10 +1119,6 @@ body::after {
   transform: translateY(-5px);
 }
 
-.hover-rotate:hover {
-  transform: rotate(5deg);
-}
-
 /* Animations */
 @keyframes fadeInUp {
   from {
@@ -1177,11 +1162,11 @@ body::after {
 
 @keyframes sparkleMove {
   0% {
-    transform: translate(0, 0) rotate(0deg) scale(0.5);
+    transform: translate(0, 0) scale(0.5);
     opacity: 1;
   }
   100% {
-    transform: translate(var(--sparkle-x), var(--sparkle-y)) rotate(var(--sparkle-rotate)) scale(1.5);
+    transform: translate(var(--sparkle-x),) scale(1.5);
     opacity: 0;
   }
 }
@@ -1312,14 +1297,10 @@ body::after {
     var(--danger-color),
     var(--primary-color)
   );
-  animation: rainbow-rotate 4s linear infinite;
   z-index: -1;
 }
 
-@keyframes rainbow-rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+
 
 /* NEW: Loading Spinner */
 .spinner {
@@ -1331,10 +1312,6 @@ body::after {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 
 /* NEW: Subtle Gradient Overlay */
 .gradient-overlay-purple {
@@ -1623,6 +1600,7 @@ body::after {
     background: white !important;
     color: black !important;
     -webkit-print-color-adjust: exact; /* Ensures background colors are printed */
+    print-color-adjust: exact; /* Standard property for compatibility */
   }
 
   /* Hide elements not needed for print */
